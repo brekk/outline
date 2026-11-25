@@ -4,5 +4,27 @@
   "main": "src/Main.mad",
   "importAliases": {
     ".": "src"
-  }
+  },
+  "dependencies": [
+    {
+      "minVersion": "0.4.1",
+      "url": "https://github.com/brekk/party-bus/archive/refs/tags/v0.4.1.zip",
+      "description": "PartyBus"
+    },
+    {
+      "minVersion": "0.1.0",
+      "url": "https://github.com/brekk/study/archive/refs/tags/v0.1.0.zip",
+      "description": "Study"
+    },
+    {
+      "minVersion": "0.7.0",
+      "url": "https://github.com/brekk/mad-at-json/archive/refs/tags/v0.7.0.zip",
+      "description": "mad-at-json"
+    },
+    {
+      "minVersion": "0.2.0",
+      "url": "https://github.com/brekk/ensign/archive/refs/tags/v0.2.0.zip",
+      "description": "ensign"
+    }
+  ]
 }

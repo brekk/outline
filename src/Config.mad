@@ -1,0 +1,33 @@
+import Ensign from "ensign"
+import Declared from "ensign/Declared/Flags"
+import Flags from "ensign/Flags"
+
+
+
+export alias OutfigConfig = { cwd :: String, force :: Boolean, showHelp :: Boolean }
+REF = { cwd: "cwd", force: "force", help: "help" }
+export FLAGS = [
+  Declared.flagString(REF.cwd, ["c"], "The current working directory. Defaults to ."),
+  Declared.flagBoolean(
+    REF.force,
+    ["f"],
+    "Automatically overwrite files if they exist. Use at your own risk, preferably with version control.",
+  ),
+  Declared.flagBoolean(REF.help, ["h"], "Show the help text you're reading right now"),
+]
+export parseFlags = pipe(
+  Flags.parseFlags,
+  Declared.validate,
+  Either.mapLeft(EPrint.printIssues),
+)
+export addFlagToState = (state, flag) => where(flag) {
+  Flags.Flag(k, v) =>
+    state
+
+  Flags.FlagToggle(k, v) =>
+    state
+}
+export parseArgsWithState = pipe(
+  parseArgs,
+  map(Outline.create),
+)
