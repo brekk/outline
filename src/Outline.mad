@@ -1,11 +1,14 @@
 import File from "File"
 import Path from "FilePath"
+import IO from "IO"
+import Term from "Terminal"
 
 import EnsignPrint from "ensign/Print"
 import MJ from "mad-at-json"
 import VL from "mad-at-json/VersionDotLock"
 
 import Log from "@/Log"
+import { VERSION } from "@/Version"
 
 
 
@@ -23,7 +26,7 @@ export create = (
     flags,
   )
 } else if (showVersion) {
-  "THIS IS A NUMBER"
+  useColor ? Term.text.bold("outline@" ++ VERSION) : "outline@" ++ VERSION
 } else do {
   Log.env.outline("RAW", { madlibJson, versionDotLock })
   return ""

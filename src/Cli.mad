@@ -7,6 +7,7 @@ import type { OutlineConfig } from "@/Config"
 import Either from "Either"
 import File from "File"
 import Path from "FilePath"
+import IO from "IO"
 import List from "List"
 import Maybe from "Maybe"
 import { Just } from "Maybe"
@@ -20,6 +21,7 @@ import VersionDotLock from "mad-at-json/VersionDotLock"
 
 import { CONSTANTS } from "@/Config"
 import C from "@/Config"
+import Ext from "@/External"
 import _File from "@/File"
 import Log from "@/Log"
 
@@ -102,6 +104,7 @@ export parseStateFromArgsAndRead = pipe(
     Either.Right(state) =>
       processMadlibJson(state)
   },
+  // chain(Ext.safeSpace(of)),
   // we gotta grab these separately because version.lock might not exist
   (raw) => pipe(
     chain(processVersionLock),
