@@ -15,7 +15,7 @@ README.md: madlib.json
 	pilcrow -i README.md --repo brekk/outline --auto
 
 src/Version.mad: madlib.json
-	cat madlib.json | jq ".version" | sed '1s@^@export VERSION = @' > src/Version.mad
+	cat madlib.json | jq ".version" | sed '1s@^@// automatically generated, do not edit manually\nexport VERSION = @' > src/Version.mad
 
 .PHONY: clean
 clean:

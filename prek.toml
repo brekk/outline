@@ -24,6 +24,14 @@ hooks = [
     files = "README\\.md$|madlib\\.json$",
     verbose=true
   },
+{
+    id ="version-check",
+    name="ensure project version",
+    entry="make src/Version.mad",
+    language="system",
+    files = "madlib\\.json$",
+    pass_filenames=false
+  },
   {
     id ="madlib-test",
     name="madlib test",
