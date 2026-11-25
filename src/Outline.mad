@@ -16,12 +16,14 @@ export create = (
   EnsignPrint.renderRoundedHelp(
     {
       name: "outline",
-      description: "auto generate table-based testing stubs",
+      description: "\nauto generate table-based testing stubs\n",
       preface: "",
       useColor,
     },
     flags,
   )
+} else if (showVersion) {
+  "THIS IS A NUMBER"
 } else do {
   Log.env.outline("RAW", { madlibJson, versionDotLock })
   return ""

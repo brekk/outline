@@ -25,6 +25,11 @@
       "minVersion": "0.2.0",
       "url": "https://github.com/brekk/ensign/archive/refs/tags/v0.2.0.zip",
       "description": "ensign"
+    },
+    {
+      "minVersion": "3.0.0",
+      "url": "https://github.com/brekk/shroud/archive/refs/tags/v3.0.0.zip",
+      "description": "shroud"
     }
   ]
 }

@@ -1,0 +1,32 @@
+import File from "File"
+import Wish from "Wish"
+
+import MadlibJson from "mad-at-json"
+import VersionDotLock from "mad-at-json/VersionDotLock"
+
+import { CONSTANTS } from "@/Config"
+import Log from "@/Log"
+
+
+
+export readAs = (processFile, readError, failToProcessError, path) => pipe(
+  Log.env.cli("reading path"),
+  File.read,
+  Wish.mapRej((_) => readError),
+  chain(
+    pipe(
+      processFile,
+      Wish.mapRej((_) => failToProcessError),
+    ),
+  ),
+)(path)
+export readMadlibJson = readAs(
+  MadlibJson.parse,
+  "Unable to read from " ++ CONSTANTS.MADLIB_JSON ++ " file",
+  "Unable to parse " ++ CONSTANTS.MADLIB_JSON ++ " file",
+)
+export readVersionLock = readAs(
+  VersionDotLock.parse,
+  "Unable to read from " ++ CONSTANTS.VERSION_LOCK ++ " file",
+  "Unable to parse " ++ CONSTANTS.VERSION_LOCK ++ " file",
+)

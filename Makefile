@@ -14,6 +14,9 @@ version.lock:
 README.md: madlib.json
 	pilcrow -i README.md --repo brekk/outline --auto
 
+src/Version.mad: madlib.json
+	cat madlib.json | jq ".version" | sed '1s@^@export VERSION = @' > src/Version.mad
+
 .PHONY: clean
 clean:
 	rm -r $(BUILD_DIR)

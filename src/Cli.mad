@@ -1,3 +1,7 @@
+import type { Flag } from "ensign/Flags"
+import type { MadlibDotJson } from "mad-at-json/MadlibDotJson"
+import type { VersionDotLock } from "mad-at-json/VersionDotLock"
+
 import type { OutlineConfig } from "@/Config"
 
 import Either from "Either"
@@ -14,7 +18,9 @@ import Flags from "ensign/Flags"
 import MadlibJson from "mad-at-json"
 import VersionDotLock from "mad-at-json/VersionDotLock"
 
+import { CONSTANTS } from "@/Config"
 import C from "@/Config"
+import _File from "@/File"
 import Log from "@/Log"
 
 
@@ -24,12 +30,15 @@ export parseFlags = pipe(
   Declared.validate(C.FLAGS),
   Either.mapLeft(Print.printIssues),
 )
+addFlagToState :: OutlineConfig -> Flag -> OutlineConfig
 export addFlagToState = (state, flag) => where(flag) {
   Flags.Flag(k, v) =>
     if (k == "cwd") {
       { ...state, cwd: Just(v) }
     } else if (k == "madlibJson") {
-      { ...state, madlibJsonPath: Just(k) }
+      { ...state, madlibJsonPath: Just(v) }
+    } else if (k == "versionLock") {
+      { ...state, versionLockPath: Just(v) }
     } else {
       state
     }
@@ -50,35 +59,15 @@ export addFlagToState = (state, flag) => where(flag) {
   _ =>
     state
 }
-export readAndParseMadlibJson = pipe(
-  Log.env.cliState("reading madlib.json at path"),
-  File.read,
-  Wish.mapRej((_) => "Unable to read from madlib.json file"),
-  chain(
-    pipe(
-      MadlibJson.parse,
-      Wish.mapRej((_) => "Unable to parse madlib.json file"),
-    ),
-  ),
-)
-export readAndParseVersionLock = pipe(
-  Log.env.cliState("reading version.lock at path"),
-  File.read,
-  Wish.mapRej((_) => "Unable to read from version.lock file"),
-  chain(
-    pipe(
-      VersionDotLock.parse,
-      Wish.mapRej((_) => "Unable to parse version.lock file"),
-    ),
-  ),
-)
+getMadlibJsonFromState :: OutlineConfig -> Wish String MadlibDotJson
 export getMadlibJsonFromState = pipe(
-  (x) => Path.joinPath([(x.cwd ?? "."), (x.madlibJsonPath ?? "madlib.json")]),
-  readAndParseMadlibJson,
+  (x) => Path.joinPath([(x.cwd ?? "."), (x.madlibJsonPath ?? CONSTANTS.MADLIB_JSON)]),
+  _File.readMadlibJson,
 )
+getVersionLockFromState :: OutlineConfig -> Wish String VersionDotLock
 export getVersionLockFromState = pipe(
-  (x) => Path.joinPath([(x.cwd ?? "."), (x.versionLockPath ?? "version.lock")]),
-  readAndParseVersionLock,
+  (x) => Path.joinPath([(x.cwd ?? "."), (x.versionLockPath ?? CONSTANTS.VERSION_LOCK)]),
+  _File.readVersionLock,
 )
 parseStateFromArgs :: List String -> Either String OutlineConfig
 export parseStateFromArgs = pipe(
@@ -92,6 +81,18 @@ export parseStateFromArgs = pipe(
     ),
   ),
 )
+processMadlibJson = (state) => if (state.showHelp || state.showVersion) {
+  of(state)
+} else do {
+  madlibJson <- getMadlibJsonFromState(state)
+  return of({ ...state, madlibJson: Just(madlibJson) })
+}
+processVersionLock = (state) => if (state.showHelp || state.showVersion) {
+  of(state)
+} else do {
+  versionLock <- getVersionLockFromState(state)
+  return of({ ...state, versionDotLock: Just(versionLock) })
+}
 export parseStateFromArgsAndRead = pipe(
   parseStateFromArgs,
   where {
@@ -99,23 +100,12 @@ export parseStateFromArgsAndRead = pipe(
       Wish.bad(x)
 
     Either.Right(state) =>
-      if (state.showHelp || state.showVersion) {
-        of(state)
-      } else do {
-        madlibJson <- getMadlibJsonFromState(state)
-        return of({ ...state, madlibJson: Just(madlibJson) })
-      }
+      processMadlibJson(state)
   },
-  // we gotta grab these separately because `version.lock` might not exist
+  // we gotta grab these separately because version.lock might not exist
   (raw) => pipe(
-    chain(
-      (state) => if (state.showHelp || state.showVersion) {
-        of(state)
-      } else do {
-        versionLock <- getVersionLockFromState(state)
-        return of({ ...state, versionDotLock: Just(versionLock) })
-      },
-    ),
+    chain(processVersionLock),
+    // failures give us the original, recovering from the missing file 
     Wish.chainRej((_) => raw),
   )(raw),
 )

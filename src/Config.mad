@@ -24,7 +24,7 @@ export alias OutlineConfig = {
   versionDotLock :: Maybe VersionDotLock,
   versionLockPath :: Maybe String,
 }
-REF = {
+export CONSTANTS = {
   cwd: "cwd",
   force: "force",
   help: "help",
@@ -32,20 +32,10 @@ REF = {
   version: "version",
   madlibJson: "madlibJson",
   versionLock: "versionLock",
+  DEFAULT_CWD: ".",
+  MADLIB_JSON: "madlib.json",
+  VERSION_LOCK: "version.lock",
 }
-export FLAGS = [
-  DFlag.flagString(REF.cwd, ["c"], "The current working directory. (Default: .)"),
-  DFlag.flagBoolean(REF.color, ["K"], "Render things with color? (Default: true)"),
-  DFlag.flagBoolean(REF.version, ["v"], "Show the version (Default: false)"),
-  DFlag.flagBoolean(
-    REF.force,
-    ["f"],
-    "Automatically overwrite files if they exist. Use at your own risk, preferably with version control. (Default: false)",
-  ),
-  DFlag.flagBoolean(REF.help, ["h"], "Show the help text you're reading right now"),
-  DFlag.flagString(REF.madlibJson, ["m"], "Set the path of madlib.json. (Default: madlib.json)"),
-  DFlag.flagString(REF.versionLock, ["l"], "Set the path of version.lock. (Default: version.lock)"),
-]
 DEFAULT_CONFIG :: OutlineConfig
 export DEFAULT_CONFIG = {
   cwd: Nothing,
@@ -58,3 +48,28 @@ export DEFAULT_CONFIG = {
   versionDotLock: Nothing,
   versionLockPath: Nothing,
 }
+export FLAGS = [
+  DFlag.flagString(
+    CONSTANTS.cwd,
+    ["c"],
+    "The current working directory. (Default: " ++ CONSTANTS.DEFAULT_CWD ++ ")",
+  ),
+  DFlag.flagBoolean(CONSTANTS.color, ["K"], "Render things with color? (Default: true)"),
+  DFlag.flagBoolean(CONSTANTS.version, ["v"], "Show the version (Default: false)"),
+  DFlag.flagBoolean(
+    CONSTANTS.force,
+    ["f"],
+    "Automatically overwrite files if they exist. Use at your own risk, preferably with version control. (Default: false)",
+  ),
+  DFlag.flagBoolean(CONSTANTS.help, ["h"], "Show the help text you're reading right now"),
+  DFlag.flagString(
+    CONSTANTS.madlibJson,
+    ["m"],
+    "Set the path of madlib.json. (Default: " ++ CONSTANTS.MADLIB_JSON ++ ")",
+  ),
+  DFlag.flagString(
+    CONSTANTS.versionLock,
+    ["l"],
+    "Set the path of version.lock. (Default: " ++ CONSTANTS.VERSION_LOCK ++ ")",
+  ),
+]
