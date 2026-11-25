@@ -5,9 +5,14 @@ import EnsignPrint from "ensign/Print"
 import MJ from "mad-at-json"
 import VL from "mad-at-json/VersionDotLock"
 
+import Log from "@/Log"
 
 
-export create = ({ cwd, force, showHelp, useColor }, flags) => if (showHelp) {
+
+export create = (
+  { madlibJson, cwd, force, showHelp, useColor, showVersion, versionDotLock },
+  flags
+) => if (showHelp) {
   EnsignPrint.renderRoundedHelp(
     {
       name: "outline",
@@ -17,6 +22,7 @@ export create = ({ cwd, force, showHelp, useColor }, flags) => if (showHelp) {
     },
     flags,
   )
-} else {
-  ""
+} else do {
+  Log.env.outline("RAW", { madlibJson, versionDotLock })
+  return ""
 }

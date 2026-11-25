@@ -3,6 +3,7 @@ import type { OutlineConfig } from "@/Config"
 import Either from "Either"
 import IO from "IO"
 import List from "List"
+import Wish from "Wish"
 
 import Declared from "ensign/Declared"
 import Print from "ensign/Declared/Print"
@@ -17,8 +18,8 @@ import Outline from "@/Outline"
 
 main = pipe(
   List.drop(1),
-  Cli.parseStateFromArgs,
+  Cli.parseStateFromArgsAndRead,
   map(Outline.create($, FLAGS)),
-  bimap(IO.putLine, IO.putLine),
+  Wish.fulfill(IO.putLine, IO.putLine),
   (_) => {},
 )

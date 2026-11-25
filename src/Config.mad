@@ -1,6 +1,11 @@
 import type { Maybe } from "Maybe"
+import type { Wish } from "Wish"
+
+import type { MadlibDotJson } from "mad-at-json/MadlibDotJson"
+import type { VersionDotLock } from "mad-at-json/VersionDotLock"
 
 import { Nothing } from "Maybe"
+import Wish from "Wish"
 
 import DFlag from "ensign/Declared/Flags"
 
@@ -11,10 +16,13 @@ import DFlag from "ensign/Declared/Flags"
 export alias OutlineConfig = {
   cwd :: Maybe String,
   force :: Boolean,
-  madlibJson :: Maybe String,
+  madlibJson :: Maybe MadlibDotJson,
+  madlibJsonPath :: Maybe String,
   showHelp :: Boolean,
   showVersion :: Boolean,
   useColor :: Boolean,
+  versionDotLock :: Maybe VersionDotLock,
+  versionLockPath :: Maybe String,
 }
 REF = {
   cwd: "cwd",
@@ -23,6 +31,7 @@ REF = {
   color: "color",
   version: "version",
   madlibJson: "madlibJson",
+  versionLock: "versionLock",
 }
 export FLAGS = [
   DFlag.flagString(REF.cwd, ["c"], "The current working directory. (Default: .)"),
@@ -35,6 +44,7 @@ export FLAGS = [
   ),
   DFlag.flagBoolean(REF.help, ["h"], "Show the help text you're reading right now"),
   DFlag.flagString(REF.madlibJson, ["m"], "Set the path of madlib.json. (Default: madlib.json)"),
+  DFlag.flagString(REF.versionLock, ["l"], "Set the path of version.lock. (Default: version.lock)"),
 ]
 DEFAULT_CONFIG :: OutlineConfig
 export DEFAULT_CONFIG = {
@@ -44,4 +54,7 @@ export DEFAULT_CONFIG = {
   force: false,
   showVersion: false,
   madlibJson: Nothing,
+  madlibJsonPath: Nothing,
+  versionDotLock: Nothing,
+  versionLockPath: Nothing,
 }
