@@ -53,8 +53,6 @@ export addFlagToState = (state, flag) => where(flag) {
 export readAndParseMadlibJson = pipe(
   Log.env.cliState("reading madlib.json at path"),
   File.read,
-  map(Log.env.cliState("madlib.json")),
-  Wish.mapRej(Log.env.cliState("bad madlib.json?")),
   Wish.mapRej((_) => "Unable to read from madlib.json file"),
   chain(
     pipe(
@@ -66,7 +64,6 @@ export readAndParseMadlibJson = pipe(
 export readAndParseVersionLock = pipe(
   Log.env.cliState("reading version.lock at path"),
   File.read,
-  map(Log.env.cliState("version.lock")),
   Wish.mapRej((_) => "Unable to read from version.lock file"),
   chain(
     pipe(
@@ -112,7 +109,9 @@ export parseStateFromArgsAndRead = pipe(
   // we gotta grab these separately because `version.lock` might not exist
   (raw) => pipe(
     chain(
-      (state) => do {
+      (state) => if (state.showHelp || state.showVersion) {
+        of(state)
+      } else do {
         versionLock <- getVersionLockFromState(state)
         return of({ ...state, versionDotLock: Just(versionLock) })
       },
