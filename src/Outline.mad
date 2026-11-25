@@ -1,9 +1,22 @@
-import MJ from "mad-at-json"
-import VL from "mad-at-json/VersionDotLock"
-
 import File from "File"
 import Path from "FilePath"
 
-create = ({cwd, force, showHelp}) => if (showHelp) {
-  renderHelp()))
+import EnsignPrint from "ensign/Print"
+import MJ from "mad-at-json"
+import VL from "mad-at-json/VersionDotLock"
+
+
+
+export create = ({ cwd, force, showHelp, useColor }, flags) => if (showHelp) {
+  EnsignPrint.renderRoundedHelp(
+    {
+      name: "outline",
+      description: "auto generate table-based testing stubs",
+      preface: "",
+      useColor,
+    },
+    flags,
+  )
+} else {
+  ""
 }

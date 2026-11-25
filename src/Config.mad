@@ -1,33 +1,47 @@
-import Ensign from "ensign"
-import Declared from "ensign/Declared/Flags"
-import Flags from "ensign/Flags"
+import type { Maybe } from "Maybe"
+
+import { Nothing } from "Maybe"
+
+import DFlag from "ensign/Declared/Flags"
 
 
 
-export alias OutfigConfig = { cwd :: String, force :: Boolean, showHelp :: Boolean }
-REF = { cwd: "cwd", force: "force", help: "help" }
+// we express cwd + madlibJson as Maybes so that we can capture whether
+// the user provided an input at all
+export alias OutlineConfig = {
+  cwd :: Maybe String,
+  force :: Boolean,
+  madlibJson :: Maybe String,
+  showHelp :: Boolean,
+  showVersion :: Boolean,
+  useColor :: Boolean,
+}
+REF = {
+  cwd: "cwd",
+  force: "force",
+  help: "help",
+  color: "color",
+  version: "version",
+  madlibJson: "madlibJson",
+}
 export FLAGS = [
-  Declared.flagString(REF.cwd, ["c"], "The current working directory. Defaults to ."),
-  Declared.flagBoolean(
+  DFlag.flagString(REF.cwd, ["c"], "The current working directory. (Default: .)"),
+  DFlag.flagBoolean(REF.color, ["K"], "Render things with color? (Default: true)"),
+  DFlag.flagBoolean(REF.version, ["v"], "Show the version (Default: false)"),
+  DFlag.flagBoolean(
     REF.force,
     ["f"],
-    "Automatically overwrite files if they exist. Use at your own risk, preferably with version control.",
+    "Automatically overwrite files if they exist. Use at your own risk, preferably with version control. (Default: false)",
   ),
-  Declared.flagBoolean(REF.help, ["h"], "Show the help text you're reading right now"),
+  DFlag.flagBoolean(REF.help, ["h"], "Show the help text you're reading right now"),
+  DFlag.flagString(REF.madlibJson, ["m"], "Set the path of madlib.json. (Default: madlib.json)"),
 ]
-export parseFlags = pipe(
-  Flags.parseFlags,
-  Declared.validate,
-  Either.mapLeft(EPrint.printIssues),
-)
-export addFlagToState = (state, flag) => where(flag) {
-  Flags.Flag(k, v) =>
-    state
-
-  Flags.FlagToggle(k, v) =>
-    state
+DEFAULT_CONFIG :: OutlineConfig
+export DEFAULT_CONFIG = {
+  cwd: Nothing,
+  useColor: true,
+  showHelp: false,
+  force: false,
+  showVersion: false,
+  madlibJson: Nothing,
 }
-export parseArgsWithState = pipe(
-  parseArgs,
-  map(Outline.create),
-)

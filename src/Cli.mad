@@ -1,0 +1,75 @@
+import type { OutlineConfig } from "@/Config"
+
+import Either from "Either"
+import File from "File"
+import List from "List"
+import { Just } from "Maybe"
+import Wish from "Wish"
+
+import Declared from "ensign/Declared"
+import Print from "ensign/Declared/Print"
+import Flags from "ensign/Flags"
+import MadlibJson from "mad-at-json"
+
+import C from "@/Config"
+import Log from "@/Log"
+
+
+
+export parseFlags = pipe(
+  Flags.parseFlags,
+  Declared.validate(C.FLAGS),
+  Either.mapLeft(Print.printIssues),
+)
+export addFlagToState = (state, flag) => where(flag) {
+  Flags.Flag(k, v) =>
+    if (k == "cwd") {
+      { ...state, cwd: Just(v) }
+    } else if (k == "madlibJson") {
+      { ...state, madlibJson: Just(k) }
+    } else {
+      state
+    }
+
+  Flags.FlagToggle(k, v) =>
+    if (k == "color") {
+      { ...state, useColor: v }
+    } else if (k == "force") {
+      { ...state, force: v }
+    } else if (k == "version") {
+      { ...state, showVersion: v }
+    } else if (k == "help") {
+      { ...state, showHelp: v }
+    } else {
+      state
+    }
+
+  _ =>
+    state
+}
+export readAndParse = pipe(
+  File.read,
+  Wish.mapRej((_) => "Unable to read from madlib.json file"),
+  chain(
+    pipe(
+      MadlibJson.parse,
+      Wish.mapRej((_) => "Unable to parse madlib.json file"),
+    ),
+  ),
+)
+export processState = pipe(
+  (x) => ((x.cwd ?? ".") ++ (x.madlibJson ?? "madlib.json")),
+  readAndParse,
+)
+// parseStateFromArgs :: List String -> Wish String OutlineConfig
+export parseStateFromArgs = pipe(
+  Log.env.cli("raw args"),
+  parseFlags,
+  Log.env.cliParse("parsed flags"),
+  map(
+    pipe(
+      List.reduce(addFlagToState, C.DEFAULT_CONFIG),
+      Log.env.cliState("inferred state"),
+    ),
+  ),
+)
