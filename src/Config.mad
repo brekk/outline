@@ -16,6 +16,7 @@ import DFlag from "ensign/Declared/Flags"
 export alias OutlineConfig = {
   cwd :: Maybe String,
   force :: Boolean,
+  gitClean :: Boolean,
   madlibJson :: Maybe MadlibDotJson,
   madlibJsonPath :: Maybe String,
   showHelp :: Boolean,
@@ -47,6 +48,7 @@ export DEFAULT_CONFIG = {
   madlibJsonPath: Nothing,
   versionDotLock: Nothing,
   versionLockPath: Nothing,
+  gitClean: false,
 }
 export FLAGS = [
   DFlag.flagString(

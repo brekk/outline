@@ -21,7 +21,7 @@ import VersionDotLock from "mad-at-json/VersionDotLock"
 
 import { CONSTANTS } from "@/Config"
 import C from "@/Config"
-import Ext from "@/External"
+import External from "@/External"
 import _File from "@/File"
 import Log from "@/Log"
 
@@ -86,6 +86,7 @@ export parseStateFromArgs = pipe(
 processMadlibJson = (state) => if (state.showHelp || state.showVersion) {
   of(state)
 } else do {
+  isSafeSpace <- External.isSafespace()
   madlibJson <- getMadlibJsonFromState(state)
   return of({ ...state, madlibJson: Just(madlibJson) })
 }
