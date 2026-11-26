@@ -13,7 +13,7 @@ import { VERSION } from "@/Version"
 
 
 export create = (
-  { madlibJson, cwd, force, showHelp, useColor, showVersion, versionDotLock },
+  { strict, status, madlibJson, cwd, force, showHelp, useColor, showVersion, versionDotLock },
   flags
 ) => if (showHelp) {
   EnsignPrint.renderRoundedHelp(
@@ -28,6 +28,17 @@ export create = (
 } else if (showVersion) {
   useColor ? Term.text.bold("outline@" ++ VERSION) : "outline@" ++ VERSION
 } else do {
-  Log.env.outline("RAW", { madlibJson, versionDotLock })
+  // Log.env.outline("RAW", { madlibJson, versionDotLock, status })
+  // we don't care about unstaged, I think?
+  // currently there's no granularity to safe-space
+  versionControlSafe = strict && (status.git && status.uncommitted)
+  Log.env.outline("safe", versionControlSafe)
+  if (!force && !versionControlSafe) {
+    return "Cannot proceed, there are files in version control which are uncommitted"
+  }
+
+
+
+
   return ""
 }

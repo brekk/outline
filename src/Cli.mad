@@ -5,23 +5,19 @@ import type { VersionDotLock } from "mad-at-json/VersionDotLock"
 import type { OutlineConfig } from "@/Config"
 
 import Either from "Either"
-import File from "File"
 import Path from "FilePath"
-import IO from "IO"
 import List from "List"
-import Maybe from "Maybe"
 import { Just } from "Maybe"
 import Wish from "Wish"
 
+import SafeSpace from "SafeSpace"
 import Declared from "ensign/Declared"
 import Print from "ensign/Declared/Print"
 import Flags from "ensign/Flags"
-import MadlibJson from "mad-at-json"
 import VersionDotLock from "mad-at-json/VersionDotLock"
 
 import { CONSTANTS } from "@/Config"
 import C from "@/Config"
-import External from "@/External"
 import _File from "@/File"
 import Log from "@/Log"
 
@@ -50,6 +46,8 @@ export addFlagToState = (state, flag) => where(flag) {
       { ...state, useColor: v }
     } else if (k == "force") {
       { ...state, force: v }
+    } else if (k == "strict") {
+      { ...state, strict: v }
     } else if (k == "version") {
       { ...state, showVersion: v }
     } else if (k == "help") {
@@ -83,20 +81,28 @@ export parseStateFromArgs = pipe(
     ),
   ),
 )
-processMadlibJson = (state) => if (state.showHelp || state.showVersion) {
+runModal = (otherwise, state) => if (state.showHelp || state.showVersion) {
   of(state)
-} else do {
-  isSafeSpace <- External.isSafespace()
+} else {
+  otherwise(state)
+}
+addOptional = (processor, raw) => pipe(
+  chain(runModal(processor)),
+  Wish.chainRej((_) => raw),
+)(raw)
+processGitStatus = (state) => do {
+  status <- SafeSpace.check(state.cwd ?? ".")
+  return of({ ...state, status })
+}
+processMadlibJson = (state) => do {
   madlibJson <- getMadlibJsonFromState(state)
   return of({ ...state, madlibJson: Just(madlibJson) })
 }
-processVersionLock = (state) => if (state.showHelp || state.showVersion) {
-  of(state)
-} else do {
+processVersionLock = (state) => do {
   versionLock <- getVersionLockFromState(state)
   return of({ ...state, versionDotLock: Just(versionLock) })
 }
-export parseStateFromArgsAndRead = pipe(
+export parseState = pipe(
   parseStateFromArgs,
   where {
     Either.Left(x) =>
@@ -105,11 +111,9 @@ export parseStateFromArgsAndRead = pipe(
     Either.Right(state) =>
       processMadlibJson(state)
   },
-  // chain(Ext.safeSpace(of)),
-  // we gotta grab these separately because version.lock might not exist
-  (raw) => pipe(
-    chain(processVersionLock),
-    // failures give us the original, recovering from the missing file 
-    Wish.chainRej((_) => raw),
-  )(raw),
+  // we expect any of these can fail
+  addOptional(processGitStatus),
+  addOptional(processMadlibJson),
+  addOptional(processVersionLock),
+  map(Log.env.cli("SKIBBYDIBB")),
 )

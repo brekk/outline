@@ -16,11 +16,12 @@ import DFlag from "ensign/Declared/Flags"
 export alias OutlineConfig = {
   cwd :: Maybe String,
   force :: Boolean,
-  gitClean :: Boolean,
   madlibJson :: Maybe MadlibDotJson,
   madlibJsonPath :: Maybe String,
   showHelp :: Boolean,
   showVersion :: Boolean,
+  status :: { git :: Boolean, uncommitted :: Boolean, unstaged :: Boolean },
+  strict :: Boolean,
   useColor :: Boolean,
   versionDotLock :: Maybe VersionDotLock,
   versionLockPath :: Maybe String,
@@ -29,6 +30,7 @@ export CONSTANTS = {
   cwd: "cwd",
   force: "force",
   help: "help",
+  strict: "strict",
   color: "color",
   version: "version",
   madlibJson: "madlibJson",
@@ -48,7 +50,8 @@ export DEFAULT_CONFIG = {
   madlibJsonPath: Nothing,
   versionDotLock: Nothing,
   versionLockPath: Nothing,
-  gitClean: false,
+  strict: false,
+  status: { git: false, uncommitted: false, unstaged: false },
 }
 export FLAGS = [
   DFlag.flagString(
@@ -61,7 +64,12 @@ export FLAGS = [
   DFlag.flagBoolean(
     CONSTANTS.force,
     ["f"],
-    "Automatically overwrite files if they exist. Use at your own risk, preferably with version control. (Default: false)",
+    "Automatically overwrite files if they exist. This will set `strict` to false if both are set. (Default: false)",
+  ),
+  DFlag.flagBoolean(
+    CONSTANTS.strict,
+    ["s"],
+    "Be version-control context aware (git only) and warn when attempting to change with uncommitted or unstaged changes in conflict. (Default: true)",
   ),
   DFlag.flagBoolean(CONSTANTS.help, ["h"], "Show the help text you're reading right now"),
   DFlag.flagString(
