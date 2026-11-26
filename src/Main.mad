@@ -20,7 +20,7 @@ import Outline from "@/Outline"
 main = pipe(
   List.drop(1),
   Cli.parseState,
-  map(Outline.create($, FLAGS)),
+  chain(Outline.createWithFlags(FLAGS)),
   Wish.fulfill(
     (x) => {
       IO.putLine(x)

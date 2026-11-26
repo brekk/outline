@@ -1,44 +1,68 @@
+import type { Maybe } from "Maybe"
+
+import type { DeclaredFlag } from "ensign/Declared/Flags"
+
+import type { OutlineConfig } from "@/Config"
+
 import File from "File"
 import Path from "FilePath"
 import IO from "IO"
+import { Just, Nothing } from "Maybe"
 import Term from "Terminal"
+import Wish from "Wish"
 
+import SafeSpace from "SafeSpace"
 import EnsignPrint from "ensign/Print"
 import MJ from "mad-at-json"
 import VL from "mad-at-json/VersionDotLock"
 
+import { CONSTANTS } from "@/Config"
 import Log from "@/Log"
 import { VERSION } from "@/Version"
 
 
 
-export create = (
-  { strict, status, madlibJson, cwd, force, showHelp, useColor, showVersion, versionDotLock },
-  flags
-) => if (showHelp) {
-  EnsignPrint.renderRoundedHelp(
-    {
-      name: "outline",
-      description: "\nauto generate table-based testing stubs\n",
-      preface: "",
-      useColor,
-    },
-    flags,
-  )
-} else if (showVersion) {
-  useColor ? Term.text.bold("outline@" ++ VERSION) : "outline@" ++ VERSION
-} else do {
-  // Log.env.outline("RAW", { madlibJson, versionDotLock, status })
-  // we don't care about unstaged, I think?
-  // currently there's no granularity to safe-space
-  versionControlSafe = strict && (status.git && status.uncommitted)
-  Log.env.outline("safe", versionControlSafe)
-  if (!force && !versionControlSafe) {
-    return "Cannot proceed, there are files in version control which are uncommitted"
-  }
-
-
-
-
-  return ""
-}
+createWithFlags :: List DeclaredFlag -> Wish String OutlineConfig -> Wish String String
+export createWithFlags = (flags) => chain(
+  ({
+    strict,
+    status,
+    madlibJson,
+    cwd,
+    force,
+    showHelp,
+    useColor,
+    showVersion,
+    versionDotLock,
+  }) => if (showHelp) {
+    Wish.good(
+      EnsignPrint.renderRoundedHelp(
+        {
+          name: "outline",
+          description: "\nauto generate table-based testing stubs\n",
+          preface: "",
+          useColor,
+        },
+        flags,
+      ),
+    )
+  } else if (showVersion) {
+    Wish.good(useColor ? Term.text.bold("outline@" ++ VERSION) : "outline@" ++ VERSION)
+  } else do {
+    // Log.env.outline("RAW", { madlibJson, versionDotLock, status })
+    // we don't care about unstaged, I think?
+    // currently there's no granularity to safe-space
+    beSafe = strict && (status.git && status.uncommitted)
+    Log.env.outline("safe", beSafe)
+    return if (!force && !beSafe) do {
+      // now we actually will check to see what files we're looking at generally modifying
+      unstaged <- pipe(
+        SafeSpace.getUnstaged,
+      )(cwd ?? CONSTANTS.DEFAULT_CWD)
+      // "Cannot proceed, there are files in version control which are uncommitted"
+      return map(show, unstaged)
+    } else {
+      Wish.good("")
+    }
+  },
+)

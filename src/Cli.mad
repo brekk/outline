@@ -115,5 +115,4 @@ export parseState = pipe(
   addOptional(processGitStatus),
   addOptional(processMadlibJson),
   addOptional(processVersionLock),
-  map(Log.env.cli("SKIBBYDIBB")),
 )
