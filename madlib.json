@@ -7,6 +7,21 @@
   },
   "dependencies": [
     {
+      "minVersion": "2.0.0",
+      "url": "https://github.com/brekk/whim/archive/refs/tags/v2.0.0.zip",
+      "description": "whim"
+    },
+    {
+      "minVersion": "1.0.0",
+      "url": "https://github.com/brekk/might/archive/refs/tags/v1.0.0.zip",
+      "description": "might"
+    },
+    {
+      "minVersion": "0.0.1",
+      "url": "https://github.com/brekk/might-could/archive/refs/tags/v0.0.1.zip",
+      "description": "might-could"
+    },
+    {
       "minVersion": "1.0.0",
       "url": "https://github.com/brekk/party-bus/archive/refs/tags/v1.0.0.zip",
       "description": "PartyBus"

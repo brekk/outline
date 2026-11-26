@@ -9,6 +9,7 @@ import Wish from "Wish"
 import Declared from "ensign/Declared"
 import Print from "ensign/Declared/Print"
 import Flags from "ensign/Flags"
+import Whim from "whim"
 
 import Cli from "@/Cli"
 import { DEFAULT_CONFIG, FLAGS } from "@/Config"
@@ -20,10 +21,10 @@ import Outline from "@/Outline"
 main = pipe(
   List.drop(1),
   Cli.parseState,
-  chain(Outline.createWithFlags(FLAGS)),
-  Wish.fulfill(
+  Outline.createWithFlags(FLAGS),
+  Whim.fulfill(
     (x) => {
-      IO.putLine(x)
+      IO.putLine(show(x))
       return Process.exit(1)
     },
     (y) => {
@@ -31,5 +32,5 @@ main = pipe(
       return Process.exit(0)
     },
   ),
-  (_) => {},
+  () => ({}),
 )

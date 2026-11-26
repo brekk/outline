@@ -3,8 +3,10 @@ import Wish from "Wish"
 
 import MadlibJson from "mad-at-json"
 import VersionDotLock from "mad-at-json/VersionDotLock"
+import Whim from "whim"
 
 import { CONSTANTS } from "@/Config"
+import Problem from "@/Error"
 import Log from "@/Log"
 
 
@@ -20,13 +22,34 @@ export readAs = (processFile, readError, failToProcessError, path) => pipe(
     ),
   ),
 )(path)
+export readAsWhim = (processFile, readError, path) => pipe(
+  Log.env.cli("reading path"),
+  File.read,
+  Wish.mapRej((x) => Problem.OutlineError("File", readError(path, x))),
+  chain(processFile),
+  Whim.fromBreakableWish,
+)(path)
 export readMadlibJson = readAs(
   MadlibJson.parse,
   "Unable to read from " ++ CONSTANTS.MADLIB_JSON ++ " file",
   "Unable to parse " ++ CONSTANTS.MADLIB_JSON ++ " file",
 )
+export readMadlibJsonWhim = readAsWhim(
+  pipe(
+    MadlibJson.parse,
+    Wish.mapRej((_) => Problem.OutlineError("File", "Unable to parse " ++ CONSTANTS.MADLIB_JSON)),
+  ),
+  (p, x) => "Unable to read from " ++ p ++ " file :" ++ show(x),
+)
 export readVersionLock = readAs(
   VersionDotLock.parse,
   "Unable to read from " ++ CONSTANTS.VERSION_LOCK ++ " file",
   "Unable to parse " ++ CONSTANTS.VERSION_LOCK ++ " file",
+)
+export readVersionLockWhim = readAsWhim(
+  pipe(
+    VersionDotLock.parse,
+    Wish.mapRej((_) => Problem.OutlineError("File", "Unable to parse " ++ CONSTANTS.VERSION_LOCK)),
+  ),
+  (p, _) => "Unable to read from " ++ p ++ " file",
 )

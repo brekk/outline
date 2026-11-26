@@ -1,0 +1,23 @@
+import type { OutlineProblem } from "@/Error"
+
+import Wish from "Wish"
+
+import SafeSpace from "safespace"
+import Whim from "whim"
+import F from "whim/Failure"
+
+import Problem from "@/Error"
+
+
+
+getUnstaged :: String -> Whim a
+export getUnstaged = pipe(
+  SafeSpace.getUnstaged,
+  Wish.mapRej((_) => Problem.OutlineError("failure", "getUnstaged failed")),
+  Whim.fromWish(Problem.resolver),
+)
+export checkGitStatus = pipe(
+  SafeSpace.check,
+  Wish.mapRej((_) => Problem.OutlineError("failure", "checkGitStatus failed")),
+  Whim.fromWish(Problem.resolver),
+)

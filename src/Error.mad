@@ -1,0 +1,15 @@
+import F from "whim/Failure"
+
+
+
+export type OutlineProblem = OutlineError(String, String) | OutlineWarning(String, String)
+instance Breakable OutlineProblem {
+  breaks = resolver
+}
+export resolver = where {
+  OutlineError(base, specific) =>
+    F.Failure("outline:error", base, specific)
+
+  OutlineWarning(base, specific) =>
+    F.Failure("outline:warning", base, specific)
+}
