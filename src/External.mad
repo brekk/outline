@@ -16,6 +16,7 @@ export getUnstaged = pipe(
   Wish.mapRej((_) => Problem.OutlineError("failure", "getUnstaged failed")),
   Whim.fromWish(Problem.resolver),
 )
+checkGitStatus :: String -> Whim a
 export checkGitStatus = pipe(
   SafeSpace.check,
   Wish.mapRej((_) => Problem.OutlineError("failure", "checkGitStatus failed")),
