@@ -11,14 +11,14 @@ import Problem from "@/Error"
 
 
 getUnstaged :: String -> Whim a
-export getUnstaged = pipe(
+export getUnstaged = (path) => pipe(
   SafeSpace.getUnstaged,
-  Wish.mapRej((_) => Problem.OutlineError("failure", "getUnstaged failed")),
-  Whim.fromWish(Problem.resolver),
-)
+  Wish.mapRej((_) => Problem.OutlineError("getUnstaged", "Failed to process '" ++ path ++ "'")),
+  Whim.fromBreakableWish,
+)(path)
 checkGitStatus :: String -> Whim a
-export checkGitStatus = pipe(
+export checkGitStatus = (path) => pipe(
   SafeSpace.check,
-  Wish.mapRej((_) => Problem.OutlineError("failure", "checkGitStatus failed")),
-  Whim.fromWish(Problem.resolver),
-)
+  Wish.mapRej((_) => Problem.OutlineError("checkGitStatus", "Failed to check '" ++ path ++ "'")),
+  Whim.fromBreakableWish,
+)(path)
