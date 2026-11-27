@@ -1,3 +1,5 @@
+import type { Wish } from "Wish"
+
 import type { Flag } from "ensign/Flags"
 import type { MadlibDotJson } from "mad-at-json/MadlibDotJson"
 import type { VersionDotLock } from "mad-at-json/VersionDotLock"
@@ -9,6 +11,7 @@ import Either from "Either"
 import Path from "FilePath"
 import List from "List"
 import { Just } from "Maybe"
+import Wish from "Wish"
 
 import SafeSpace from "SafeSpace"
 import Declared from "ensign/Declared"
@@ -20,6 +23,7 @@ import Failure from "whim/Failure"
 
 import { CONSTANTS } from "@/Config"
 import C from "@/Config"
+import Problem from "@/Error"
 import External from "@/External"
 import _File from "@/File"
 import Log from "@/Log"
@@ -62,15 +66,15 @@ export addFlagToState = (state, flag) => where(flag) {
   _ =>
     state
 }
-getMadlibJsonFromState :: OutlineConfig -> Whim MadlibDotJson
+getMadlibJsonFromState :: OutlineConfig -> Wish e MadlibDotJson
 export getMadlibJsonFromState = pipe(
   (x) => Path.joinPath([(x.cwd ?? "."), (x.madlibJsonPath ?? CONSTANTS.MADLIB_JSON)]),
-  _File.readMadlibJsonWhim,
+  _File.readMadlibJson,
 )
-getVersionLockFromState :: OutlineConfig -> Whim VersionDotLock
+getVersionLockFromState :: OutlineConfig -> Wish e VersionDotLock
 export getVersionLockFromState = pipe(
   (x) => Path.joinPath([(x.cwd ?? "."), (x.versionLockPath ?? CONSTANTS.VERSION_LOCK)]),
-  _File.readVersionLockWhim,
+  _File.readVersionLock,
 )
 parseStateFromArgs :: List String -> Either String OutlineConfig
 export parseStateFromArgs = pipe(
@@ -91,22 +95,30 @@ runModal = (otherwise, state) => if (state.showHelp || state.showVersion) {
 }
 addOptional = (processor, raw) => pipe(
   chain(runModal(processor)),
+  Wish.chainRej((_) => raw),
 )(raw)
-processGitStatus :: OutlineConfig -> Whim OutlineConfig
+processGitStatus :: OutlineConfig -> Wish e OutlineConfig
 processGitStatus = (state) => do {
   status <- pipe(
-    External.checkGitStatus,
+    SafeSpace.check,
+    Wish.mapRej(Problem.OutlineError("cli")),
   )(state.cwd ?? ".")
   return of({ ...state, status })
 }
-processMadlibJson :: OutlineConfig -> Whim OutlineConfig
+processMadlibJson :: OutlineConfig -> Wish e OutlineConfig
 processMadlibJson = (state) => do {
-  madlibJson <- getMadlibJsonFromState(state)
+  madlibJson <- pipe(
+    getMadlibJsonFromState,
+    Wish.mapRej(Problem.OutlineError("cli")),
+  )(state)
   return of({ ...state, madlibJson: Just(madlibJson) })
 }
-processVersionLock :: OutlineConfig -> Whim OutlineConfig
+processVersionLock :: OutlineConfig -> Wish e OutlineConfig
 processVersionLock = (state) => do {
-  versionLock <- getVersionLockFromState(state)
+  versionLock <- pipe(
+    getVersionLockFromState,
+    Wish.mapRej(Problem.OutlineError("cli")),
+  )(state)
   return of({ ...state, versionDotLock: Just(versionLock) })
 }
 parseState :: List String -> Whim OutlineConfig
@@ -114,13 +126,16 @@ export parseState = pipe(
   parseStateFromArgs,
   where {
     Either.Left(x) =>
-      Whim.bad(Failure.Failure("outline", "Cli", x))
+      Wish.bad(Problem.OutlineError("cli", "parseState"))
 
     Either.Right(state) =>
-      processMadlibJson(state)
+      pipe(
+        processMadlibJson,
+      )(state)
   },
   // we expect any of these can fail
   addOptional(processGitStatus),
   addOptional(processMadlibJson),
   addOptional(processVersionLock),
+  Whim.fromWish(Problem.resolver),
 )
